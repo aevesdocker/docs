@@ -80,7 +80,7 @@ Selecting a file share instance expands the dropdown and exposes this informatio
 You can use a `.syncignore` file at the root of each file share, to exclude local files from your file share instance. It supports the same syntax as `.dockerignore` files and excludes, and/or re-includes, paths from synchronization. `.syncignore` files are ignored at any location other than the root of the file share.
  
 Some example of things you might want to add to your `.syncignore` file are:
-- [?]
+- ?
 
 In general, the contents of your `.syncignore` file should be similar to what you have in your `.gitignore` file.
 
