@@ -6,14 +6,6 @@ keywords: Docker Dashboard, manage, gui, dashboard, builders, builds
 
 ![Builds view in Docker Desktop](../images/builds-view.webp)
 
-<picture>
-  <source srcset="/desktop/images/manage-builder-dropdown.webp" media="(prefers-color-scheme: dark)" >
-  <img src="/desktop/images/build-ui-timing-chart.webp">
-</picture>
-
-
-
-
 The **Builds** view is a simple interface that lets you inspect your build
 history and manage builders using Docker Desktop. By default, it
 displays a list of all your ongoing and completed builds.
