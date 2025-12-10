@@ -36,6 +36,10 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
 
 {{< desktop-install-v2 all=true win_arm_release="Early Access" version="4.54.0" build_path="/212467/" >}}
 
+### Security 
+
+- Fixed [CVE-2025-13743](https://www.cve.org/cverecord?id=CVE-2025-13743) where Docker Desktop diagnostics bundles were found to include expired Hub PATs in log output due to error object serialization.
+
 ### New
 
 - Added support for vLLM in Docker Model Runner on Windows with WSL2 and NVIDIA GPUs.
