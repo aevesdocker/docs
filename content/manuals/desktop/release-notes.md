@@ -28,7 +28,7 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
 
 ## 4.64.0
 
-{{< release-date date="2026-03-10" >}}
+{{< release-date date="2026-03-11" >}}
 
 {{< desktop-install-v2 all=true win_arm_release="Early Access" version="4.64.0" build_path="/221278/" >}}
 
@@ -85,10 +85,6 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
 
 - Improved startup time on Windows.
 
-### Known issues
-
-- The Windows MSI installer cannot update an existing Docker Desktop installation when the current version is 4.59 or later. As a workaround, uninstall the existing version before reinstalling. Note that uninstalling removes all associated data. A fix will be provided in a future MSI release.
-
 ## 4.62.0
 
 {{< release-date date="2026-02-23" >}}
@@ -122,10 +118,6 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
 - Addressed [CVE-2026-2664](https://www.cve.org/cverecord?id=CVE-2026-2664), out of bounds read in grpcfuse kernel module.
 - Addressed [CVE-2026-28400](https://www.cve.org/cverecord?id=CVE-2026-28400), runtime flag injection in Docker Model Runner.
 
-### Known issues
-
-- The Windows MSI installer cannot update an existing Docker Desktop installation when the current version is 4.59 or later. As a workaround, uninstall the existing version before reinstalling. Note that uninstalling removes all associated data. A fix will be provided in a future MSI release.
-
 ## 4.61.0
 
 {{< release-date date="2026-02-18" >}}
@@ -154,10 +146,6 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
    - Added experimental Linux support (single user only, UID 1000).
    - Added support for running in WSL 2.
    - Sandboxes now start in the current working directory if no path is provided.
-
-### Known issues
-
-- The Windows MSI installer cannot update an existing Docker Desktop installation when the current version is 4.59 or later. As a workaround, uninstall the existing version before reinstalling. Note that uninstalling removes all associated data. A fix will be provided in a future MSI release.
 
 ## 4.60.1
 
@@ -193,10 +181,6 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
    - Sandboxes now block `console.anthropic.com/claude.ai` in proxy default rules
    - Fix CLI help text for `run <agent> --help`
    - Improved terminal size handling
-
-### Known issues
-
-- The Windows MSI installer cannot update an existing Docker Desktop installation when the current version is 4.59 or later. As a workaround, uninstall the existing version before reinstalling. Note that uninstalling removes all associated data. A fix will be provided in a future MSI release.
 
 ## 4.59.1
 
@@ -529,7 +513,7 @@ For more frequently asked questions, see the [FAQs](/manuals/desktop/troubleshoo
 
 ### New 
 
-- [Docker Agent](/manuals/ai/docker-agent/_index.md) is now available through Docker Desktop. 
+- [cagent](/manuals/ai/cagent/_index.md) is now available through Docker Desktop. 
 - [Docker Debug](/reference/cli/docker/debug/) is now free for all users. 
 
 ### Upgrades
