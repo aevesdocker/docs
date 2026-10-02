@@ -2,78 +2,57 @@
 title: Docker Offload usage
 linktitle: Usage
 weight: 30
-description: Learn about Docker Offload usage and how to monitor your cloud resources.
-keywords: cloud, usage, Offload
+description: Learn how Docker Offload is billed and how to monitor your usage.
+keywords: cloud, usage, offload, billing
 ---
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
+{{% include "offload-version-note.md" %}}
 
-The **Offload activity** page in Docker Home provides visibility into user
-activity and session metrics for Docker Offload.
+Docker Offload is billed for the time your cloud sandbox runs, as part of your
+Docker Agentic Platform subscription. For subscription and payment information,
+see [Signup and billing](/manuals/agentic-platform/signup.md).
 
-To monitor your usage:
+## What you're billed for
 
-1. Sign in to [Docker Home](https://app.docker.com/).
-2. If you have access to multiple organizations, select the organization
-   associated with your Docker Offload subscription.
-3. Select **Offload** > **Offload activity**.
+Billing starts when your sandbox finishes being created and stops when
+hibernation is initiated, whether you run `docker offload stop` or the sandbox
+hibernates on its own after a period without activity.
 
-### Overview metrics
+You aren't billed while a sandbox is hibernated. A hibernated sandbox keeps its
+containers, images, and volumes, so you can leave a workload in place between
+sessions without paying for idle time.
 
-Key metrics at the top of the page summarize your Docker Offload usage:
+<!-- TODO: Confirm the billing unit and the hourly rate, and whether there's a
+minimum billable duration. The v2 plan mentions exploring more granular
+metering in a later milestone, so note the unit that ships with Docker Desktop
+4.95. -->
 
-- **Total duration**: The total time spent in Offload sessions
-- **Average duration**: The average time per Offload session
-- **Total sessions**: The total number of Offload sessions
-- **Unique images used**: The number of distinct container images used across
-  sessions
-- **Unique users**: The number of different users in Docker Offload sessions
+<!-- TODO: Document whether volumes retained by a hibernated sandbox incur a
+storage charge separate from compute. -->
 
-### Filter and export your data
+## Monitor your usage
 
-You can filter the Offload activity data by:
+To see your running sandbox and its hourly price, open the [Docker Agentic
+Platform Console](https://agentic-platform.docker.com/).
 
-- **Period**: Select a preset time period or choose a custom date range
-- **Users**: Organization owners and members with analytics permissions can
-  filter by specific users
-- **Additional Filters**: Filter by active sessions and session duration.
+To see your sandboxes from the CLI:
 
-Export your session data by selecting the **Download CSV** button. The exported
-file includes:
+```console
+$ docker offload ls
+```
 
-- Session ID
-- Username
-- Image
-- Started time
-- Ended time
-- Duration (in seconds)
-- Status
-- Container count
+While a sandbox is running, Docker Desktop shows a session duration estimate in
+the Dashboard footer next to the hourglass icon.
 
-The CSV export includes data for your selected date range and user filters,
-letting you download exactly what you're viewing.
+<!-- TODO: Confirm which Docker Desktop and Docker Home surfaces report Offload
+spend for v2, and whether the Offload activity page in Docker Home covers v2
+sandboxes or remains specific to Docker Offload v1. -->
 
-### Activity cards
+## Reduce your usage
 
-The following cards provide insights into your Docker Offload usage:
-
-- **Offload usage**: Shows your usage trends over time and cloud resource
-  consumption patterns.
-- **Popular images**: Shows the top 4 most frequently used container images in
-  your Docker Offload sessions. Select the card to see more images.
-- **Top Offload users**: Shows the top 4 users by session count and duration. Select
-  the card to see more users.
-
-### Offload sessions
-
-A detailed list of Offload sessions appears following the activity cards. The list:
-
-- Starts with any currently active sessions
-- Shows session details including start time, duration, images used, and user
-  information
-- Can be filtered using the date and user filters described previously
-- Displays **Offload sessions** if you have organization-wide analytics
-  permissions, or **My Offload sessions** if viewing only your own data
-
-Select any session to view more details in a side panel.
+Because you're billed for the time your sandbox runs, the main ways to reduce
+your spend are to stop your sandbox when you're not using it and to make your
+builds faster. For build and transfer optimizations, see [Optimize Docker
+Offload usage](optimize.md).

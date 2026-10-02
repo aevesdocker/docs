@@ -8,113 +8,150 @@ keywords: cloud, quickstart, Docker Desktop, offload
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-[Docker Offload](./about.md) lets you build and run containers in the cloud
-while using your local Docker Desktop tools and workflow. This means faster
-builds, access to powerful cloud resources, and a seamless development
-experience.
+{{% include "offload-version-note.md" %}}
 
-This quickstart covers the steps developers need to get started with Docker Offload.
+[Docker Offload](about.md) lets you build and run containers in a cloud sandbox
+while using your local Docker tools and workflow. Your containers run on cloud
+hardware, but you work with them the same way you work with local containers.
 
-> [!NOTE]
->
-> If you're an organization owner, to get started you must <a href="https://www.docker.com/pricing/contact-sales/" id="dkr_docs_cs_offload_quickstart" class="link" rel="noopener">contact sales</a> and subscribe your
-> organization to use Docker Offload. After subscribing, see [Manage Docker
-> products](../accounts/organization/manage/manage-products.md) to learn how to manage
-> access for the developers in your organization.
-
+This quickstart covers the steps developers need to get started with Docker
+Offload.
 
 ## Prerequisites
 
-- You must have [Docker Desktop](/desktop/) installed. Docker recommends using
-  the latest version of Docker Desktop to access the newest features and
-  improvements in Docker Offload.
-- You must have a Docker Business subscription and a Docker Offload subscription.
+- [Docker Desktop](/desktop/) 4.95 or later. Docker recommends using the latest
+  version to access the newest features and improvements in Docker Offload.
+- A Docker Agentic Platform subscription. To subscribe, see [Signup and
+  billing](/manuals/agentic-platform/signup.md).
+- **Enable Docker Offload** turned off in **Settings** > **Docker Offload**, if
+  the setting appears. The setting appears only if your account has been
+  activated for [Docker Offload v1](v1/_index.md).
 
-## Step 1: Verify access to Docker Offload
+## Step 1: Sign in
 
-To access Docker Offload, you must be part of an organization that has
-subscribed to Docker Offload. As a developer, you can verify this by checking if
-the Docker Offload toggle appears in the Docker Desktop Dashboard header.
-
-1. Start Docker Desktop and sign in.
-2. In the Docker Desktop Dashboard header, look for the Docker Offload toggle.
-
-![Offload toggle](./images/offload-toggle.png)
-
-If you see the Docker Offload toggle, you have access to Docker Offload and can
-proceed to the next step. If you don't see the Docker Offload toggle, check if
-Docker Offload is disabled in your [Docker Desktop
-settings](./configuration.md), and then contact your administrator to verify
-that your organization has subscribed to Docker Offload and that they have
-enabled access for your organization.
-
-## Step 2: Start Docker Offload
-
-You can start Docker Offload from the CLI or in the header of the Docker Desktop
-Dashboard. The following steps describe how to start Docker Offload using the
-CLI.
-
-1. Start Docker Desktop and sign in.
-2. Open a terminal and run the following command to start Docker Offload:
+1. Start Docker Desktop and sign in with the Docker account you used to
+   subscribe.
+2. Open a terminal and verify that your account has access:
 
    ```console
-   $ docker offload start
+   $ docker offload diagnose
    ```
 
-   > [!TIP]
-   >
-   > To learn more about the Docker Offload CLI commands, see the [Docker Offload CLI
-   > reference](/reference/cli/docker/offload/).
+   If the check reports that your account doesn't have access, see
+   [Troubleshoot Docker Offload](troubleshoot.md).
 
-3. If you are a member of multiple organizations that have access to Docker
-   Offload, you have the option to select a profile. Your usage will be
-   associated with the organization of the selected profile.
+## Step 2: Create a cloud sandbox
 
+Run the following command to create a sandbox and connect Docker to it:
 
-When Docker Offload is started, you'll see a cloud icon ({{< inline-image
-src="./images/cloud-mode.png" alt="Offload mode icon" >}}) in the Docker Desktop
-Dashboard header, and the Docker Desktop Dashboard appears purple. You can run
-`docker offload status` in a terminal to check the status of Docker Offload.
+```console
+$ docker offload create
+```
 
-## Step 3: Run a container with Docker Offload
+Docker Offload creates a cloud sandbox and switches your Docker context to
+`cloud`. From this point, Docker commands run in the sandbox instead of on your
+local machine.
 
-After starting Docker Offload, Docker Desktop connects to a secure cloud
-environment that mirrors your local experience. When you run builds or
-containers, they execute remotely, but behave just like local ones.
+> [!TIP]
+>
+> To learn more about the Docker Offload CLI commands, see the [Docker Offload
+> CLI reference](/reference/cli/docker/offload/).
 
-To verify that Docker Offload is working, run a container:
+To confirm which context is selected:
+
+```console
+$ docker context ls
+```
+
+## Step 3: Run a container
+
+Run a container to verify that Docker Offload is working:
 
 ```console
 $ docker run --rm hello-world
 ```
 
-If Docker Offload is working, you'll see `Hello from Docker!` in the terminal output.
+The container runs in the cloud sandbox, and its output is streamed to your
+terminal. If Docker Offload is working, you see `Hello from Docker!` in the
+output.
 
-## Step 4: Monitor your Offload session
+You can also send a single command to the sandbox without creating one first.
+The `--cloud` flag runs that command in the cloud and leaves your context
+unchanged:
 
-When Docker Offload is started and you have started session (for example, you've
-ran a container), then you can see current session duration estimate in the
-Docker Desktop Dashboard footer next to the hourglass icon ({{< inline-image
-src="./images/hourglass-icon.png" alt="Offload session duration" >}}).
+```console
+$ docker --cloud build .
+$ docker --cloud run --rm hello-world
+```
 
-Also, when Docker Offload is started, you can view detailed session information
-by selecting **Docker Offload** > **Insights** in the left navigation of the
-Docker Desktop Dashboard.
+<!-- TODO: Clarify the relationship between `docker offload create` and `docker
+--cloud`. If `create` switches the context to `cloud`, document when a reader
+should reach for `--cloud` instead, and whether `--cloud` creates a sandbox
+on demand. -->
 
-## Step 5: Stop Docker Offload
+## Step 4: Reach your local containers
 
-Docker Offload automatically
-[idles](./about.md#session-management-and-idle-state) if you do not respond to
-periodic prompts that appear in the Docker Desktop Dashboard. You can stop your
-Docker Offload session at any time. To stop Docker Offload:
+Creating a sandbox doesn't stop your local containers, but it does change which
+containers Docker commands apply to. While your context is `cloud`:
+
+- `docker ps -a` lists containers in the sandbox, not your local containers.
+- Ports published by your local containers aren't reachable through the `cloud`
+  context.
+
+To work with your local containers without leaving Docker Offload, pass the
+local context explicitly:
+
+```console
+$ docker --context desktop-linux ps -a
+```
+
+<!-- TODO: Document how ports published by containers in the sandbox are
+reached. The Offload v2 user journey describes them as available on
+localhost, but cloud sandboxes are documented as exposing a port through a
+public HTTPS URL with no host port binding. See
+/manuals/ai/sandboxes/cloud/local-vs-cloud.md. These need to agree before this
+step can describe port access. -->
+
+## Step 5: Check your sandbox
+
+List the sandboxes that Docker Offload created for you:
+
+```console
+$ docker offload ls
+```
+
+You can also view your sandbox, including its hourly price, in the [Docker
+Agentic Platform Console](https://agentic-platform.docker.com/).
+
+You can run one Docker Offload sandbox at a time. If you run `docker offload
+create` while a sandbox exists, Docker Offload shows a warning instead of
+creating a second one.
+
+To check the state of your connection at any time:
+
+```console
+$ docker offload status
+```
+
+## Step 6: Stop Docker Offload
+
+When you finish, stop Docker Offload:
 
 ```console
 $ docker offload stop
 ```
 
-When you stop Docker Offload, the cloud environment is terminated and all
-running containers and images are removed. When Docker Offload has been idle for
-5 minutes, the environment is also terminated and all running containers and
-images are removed.
+Your Docker context switches back to `desktop-linux` immediately, and the
+sandbox begins hibernating in the background. Your local containers and their
+published ports are available again.
 
-To start Docker Offload again, run the `docker offload start` command.
+Unlike Docker Offload v1, stopping doesn't discard your work. The sandbox keeps
+its containers, images, and volumes, so you can resume where you left off. For
+what's preserved and how billing stops, see [Manage
+sandboxes](sandboxes.md).
+
+## What's next
+
+- [Learn how Docker Offload works](about.md)
+- [Manage your sandbox](sandboxes.md), including resuming and deleting it
+- [Optimize your Docker Offload usage](optimize.md)

@@ -3,105 +3,126 @@ title: About Docker Offload
 linktitle: About
 weight: 15
 description: Learn about Docker Offload, its features, and how it works.
-keywords: cloud, offload, vdi
+keywords: cloud, offload, vdi, cloud sandbox
 ---
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-Docker Offload is a fully managed service for building and running containers in
-the cloud using the Docker tools you already know, including Docker Desktop, the
-Docker CLI, and Docker Compose. It extends your local development workflow into a
-scalable, cloud-powered environment, enabling developers to work efficiently even
-in virtual desktop infrastructure (VDI) environments or systems that don't support
-nested virtualization.
+{{% include "offload-version-note.md" %}}
+
+Docker Offload is a fully managed service for building and running containers
+in the cloud using the Docker tools you already know, including Docker Desktop,
+the Docker CLI, and Docker Compose. It extends your local development workflow
+into a cloud environment, so you can work on hardware that can't run your
+workload, in virtual desktop infrastructure (VDI) environments, or on systems
+that don't support nested virtualization.
 
 ## Key features
 
-Docker Offload includes the following capabilities to support modern container
-workflows:
-
-- Ephemeral cloud runners: Automatically provision and tear down cloud
-  environments for each container session.
-- Secure communication: Use encrypted tunnels between Docker Desktop and cloud
-  environments with support for secure secrets and image pulling.
-- Port forwarding and bind mounts: Retain a local development experience even
-  when running containers in the cloud.
-- VDI-friendly: [Use Docker Desktop](../desktop/setup/vm-vdi.md) in virtual
-  desktop environments or systems that don't support nested virtualization.
+- Cloud sandboxes that persist: Your containers, images, and volumes survive
+  stopping and resuming, so you can pick up a long-running workload where you
+  left off.
+- Familiar commands: Run the Docker CLI and Docker Compose commands you already
+  use. Your context determines where they run.
+- Secure communication: Use encrypted tunnels between Docker Desktop and the
+  cloud sandbox, with support for secure secrets and image pulling.
+- Usage-based billing: Pay for the time your sandbox runs, not for the time it
+  spends hibernating.
+- VDI-friendly: [Use Docker Desktop](/manuals/desktop/setup/vm-vdi.md) in
+  virtual desktop environments or systems that don't support nested
+  virtualization.
 
 For more information, see the [Docker Offload product
 page](https://www.docker.com/products/docker-offload/).
 
 ## How Docker Offload works
 
-Docker Offload replaces the need to build or run containers locally by connecting
-Docker Desktop to secure, dedicated cloud resources.
+Docker Offload replaces the need to build or run containers locally by
+connecting Docker Desktop to a cloud sandbox running its own Docker daemon.
 
-### Running containers with Docker Offload
+When you run `docker offload create`:
 
-When you use Docker Offload to build or run containers, Docker Desktop creates a secure
-SSH tunnel to a Docker daemon running in the cloud. Your containers are started
-and managed entirely in that remote environment.
+1. Docker Offload provisions a cloud sandbox for your account.
+2. Docker Desktop opens a secure tunnel to the Docker daemon in that sandbox.
+3. Your Docker context switches to `cloud`, so Docker commands run in the
+   sandbox.
+4. Builds and containers run on cloud hardware, and their output streams to
+   your terminal.
 
-Here's what happens:
+Your local Docker daemon keeps running throughout. Local containers aren't
+stopped, but Docker commands no longer apply to them unless you pass
+`--context desktop-linux`. For more information, see [Manage
+sandboxes](sandboxes.md#work-with-local-and-cloud-containers).
 
-1. Docker Desktop connects to the cloud and triggers container creation.
-2. Docker Offload builds or pulls the required images and starts containers in the cloud.
-3. The connection stays open while the containers run and you remain active.
-4. When the containers stop running, the environment shuts down and is cleaned
-   up automatically.
+### Relationship to Docker Sandboxes
 
-This setup avoids the overhead of running containers locally and enables fast,
-reliable containers even on low-powered machines, including machines that do not
-support nested virtualization. This makes Docker Offload ideal for developers
-using environments such as virtual desktops, cloud-hosted development machines,
-or older hardware.
+Docker Offload runs on the same cloud infrastructure as [cloud
+sandboxes](/manuals/ai/sandboxes/cloud/_index.md) in Docker Agentic Platform,
+and both are covered by a Docker Agentic Platform subscription.
 
-Despite running remotely, features like bind mounts and port forwarding continue
-to work seamlessly, providing a local-like experience from within Docker Desktop
-and the CLI.
+<!-- TODO: Document whether a sandbox created by `docker offload create`
+appears in `sbx --cloud ls`, and whether `docker offload ls` shows sandboxes
+created by `sbx --cloud create`. The two CLIs are documented as having separate
+state, so readers need to know whether Offload sandboxes are a separate pool
+or the same one viewed through a different command. -->
 
 ### Cloud resources
 
-Docker Offload uses cloud hosts with 4 vCPUs and 8 GiB of memory. If you have
-different requirements, <a href="https://www.docker.com/pricing/contact-sales/" id="dkr_docs_cs_offload_about" class="link" rel="noopener">contact Docker</a> to explore options.
+<!-- TODO: Confirm the vCPU and memory of a Docker Offload sandbox, whether
+the size is configurable, and which CPU architectures are available. Docker
+Offload v1 used a fixed 4 vCPU / 8 GiB host. -->
 
-### Session management and idle state
+### Session lifecycle and hibernation
 
-Docker Offload uses session management and idle state policies to ensure fair use of cloud resources across all users, see [Fair use](#fair-use).
+A Docker Offload sandbox moves between a running state and a hibernated state.
 
-Each user can run one Docker Offload session at a time. When Docker Desktop is in an **Offload idle** state, it waits for activity on the Docker API and only connects to a cloud environment when needed. Once connected, the session moves to an **Offload running** state and stays connected as long as Docker detects activity. Activity includes any Docker API call, a running container, or an active build.
+- Running: The sandbox is connected and billable. Builds and containers execute
+  on cloud hardware.
+- Hibernated: The sandbox is suspended and isn't billed. Its containers,
+  images, and volumes are preserved.
 
-#### When you'll see a prompt
+Your sandbox hibernates when you run `docker offload stop`, or automatically
+after a period without activity. Hibernation can take several minutes to
+complete.
 
-While Docker Offload is running, Docker Desktop shows prompts in the Dashboard to check if you're still active. Prompts appear in two cases:
+Resuming a hibernated sandbox restores its exact previous state. Containers
+that were running resume, and data written to volumes and container
+filesystems is still there. Build logs from an earlier session remain available
+in the sandbox.
 
-1. No activity is detected for more than 3 minutes.
-2. The session has been running for a long time.
+<!-- TODO: Document the idle period that triggers automatic hibernation. -->
 
-When a prompt appears, you can:
-   - Select **Ask me again later** to confirm you're still active and continue your session.
-   - Select **Idle now** to return to an idle state immediately.
-   - Do nothing, and the session returns to an idle state automatically.
+<!-- TODO: Document how long a hibernated sandbox is retained before it's
+deleted. This determines how long earlier build logs and container state stay
+available, and it's the most common question from readers planning to walk away
+from a workload. -->
 
-#### What happens when your session goes idle
+<!-- TODO: Document the command that resumes a hibernated sandbox. The v2
+command set replaces `docker offload start`, so confirm whether resuming uses
+`docker offload create`, a dedicated resume command, or happens implicitly on
+the next Docker command. -->
 
-After your session returns to an idle state, there is a 5-minute grace period. You can resume the session during this time by running any Docker command.
+<!-- TODO: Document what happens when `docker offload create` runs for the same
+account on two machines. -->
+
+### Comparison with Docker Offload v1
+
+| | Docker Offload | [Docker Offload v1](v1/_index.md) |
+| --- | --- | --- |
+| Subscription | Docker Agentic Platform, purchased by individual developers | Docker Offload, purchased by an organization |
+| Start with | `docker offload create` | `docker offload start`, or the Dashboard toggle |
+| Run one command remotely | `docker --cloud build`, `docker --cloud run` | Not available |
+| Docker context | `cloud` | `docker-cloud` |
+| On stop | Sandbox hibernates and keeps its state | Environment is terminated and its contents are deleted |
+| Billing | Metered for the time the sandbox runs | Covered by the organization's subscription, subject to fair use |
 
 > [!IMPORTANT]
-> If the idle period exceeds 5 minutes without activity, the session is terminated. Docker Offload environments are ephemeral, so the remote environment and any containers, images, or volumes in it are deleted. To keep work between sessions, push images to a registry such as [Docker Hub](/docker-hub/) before your session ends.
-
-#### Long session prompts
-
-Long session prompts appear every 3 hours during a session. After 8 hours of cumulative usage in a day, prompts appear every hour. The 8-hour counter resets at the start of each day.
-
-## Fair use
-
-Docker Offload enforces a fair use policy to prevent resource abuse. Fair use is
-defined as up to 8 compute hours per named user per day, totaled across all user
-sessions. Usage in excess of this threshold may be subject to session management
-at Docker's discretion.
+>
+> The Docker context is named `cloud` rather than `docker-cloud`. If you have
+> scripts or tooling that reference the `docker-cloud` context, update them
+> before moving from Docker Offload v1.
 
 ## What's next
 
-Get hands-on with Docker Offload by following the [Docker Offload quickstart](/offload/quickstart/).
+Get hands-on with Docker Offload by following the [Docker Offload
+quickstart](quickstart.md).
