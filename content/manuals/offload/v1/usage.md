@@ -10,25 +10,25 @@ keywords: cloud, usage, Offload
 
 
 The **Offload activity** page in Docker Home provides visibility into user
-activity and session metrics for Docker Offload.
+activity and session metrics for Docker Offload v1.
 
 To monitor your usage:
 
 1. Sign in to [Docker Home](https://app.docker.com/).
 2. If you have access to multiple organizations, select the organization
-   associated with your Docker Offload subscription.
+   associated with your Docker Offload v1 subscription.
 3. Select **Offload** > **Offload activity**.
 
 ### Overview metrics
 
-Key metrics at the top of the page summarize your Docker Offload usage:
+Key metrics at the top of the page summarize your Docker Offload v1 usage:
 
 - **Total duration**: The total time spent in Offload sessions
 - **Average duration**: The average time per Offload session
 - **Total sessions**: The total number of Offload sessions
 - **Unique images used**: The number of distinct container images used across
   sessions
-- **Unique users**: The number of different users in Docker Offload sessions
+- **Unique users**: The number of different users in Docker Offload v1 sessions
 
 ### Filter and export your data
 
@@ -56,12 +56,12 @@ letting you download exactly what you're viewing.
 
 ### Activity cards
 
-The following cards provide insights into your Docker Offload usage:
+The following cards provide insights into your Docker Offload v1 usage:
 
 - **Offload usage**: Shows your usage trends over time and cloud resource
   consumption patterns.
 - **Popular images**: Shows the top 4 most frequently used container images in
-  your Docker Offload sessions. Select the card to see more images.
+  your Docker Offload v1 sessions. Select the card to see more images.
 - **Top Offload users**: Shows the top 4 users by session count and duration. Select
   the card to see more users.
 

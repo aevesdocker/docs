@@ -1,7 +1,7 @@
 ---
 title: About Docker Offload
 linktitle: About
-weight: 15
+weight: 20
 description: Learn about Docker Offload, its features, and how it works.
 keywords: cloud, offload, vdi, cloud sandbox
 ---
@@ -17,17 +17,26 @@ into a cloud environment, so you can work on hardware that can't run your
 workload, in virtual desktop infrastructure (VDI) environments, or on systems
 that don't support nested virtualization.
 
+This page explains how Docker Offload works: what happens when you create a
+sandbox, how a sandbox moves between running and paused, and how the current
+version differs from Docker Offload v1. To get set up, follow the
+[quickstart](quickstart.md). For the commands you use day to day, see [Manage
+sandboxes](sandboxes.md).
+
 ## Key features
 
 - Cloud sandboxes that persist: Your containers, images, and volumes survive
-  stopping and resuming, so you can pick up a long-running workload where you
+  pausing and resuming, so you can pick up a long-running workload where you
   left off.
 - Familiar commands: Run the Docker CLI and Docker Compose commands you already
   use. Your context determines where they run.
+- Port forwarding and file sync: Reach ports published in the sandbox from your
+  machine, and work with bind-mounted files, as you would with local
+  containers.
 - Secure communication: Use encrypted tunnels between Docker Desktop and the
   cloud sandbox, with support for secure secrets and image pulling.
 - Usage-based billing: Pay for the time your sandbox runs, not for the time it
-  spends hibernating.
+  spends paused.
 - VDI-friendly: [Use Docker Desktop](/manuals/desktop/setup/vm-vdi.md) in
   virtual desktop environments or systems that don't support nested
   virtualization.
@@ -44,83 +53,92 @@ When you run `docker offload create`:
 
 1. Docker Offload provisions a cloud sandbox for your account.
 2. Docker Desktop opens a secure tunnel to the Docker daemon in that sandbox.
-3. Your Docker context switches to `cloud`, so Docker commands run in the
+3. Your Docker context switches to `docker-cloud`, so Docker commands run in the
    sandbox.
 4. Builds and containers run on cloud hardware, and their output streams to
    your terminal.
 
-Your local Docker daemon keeps running throughout. Local containers aren't
-stopped, but Docker commands no longer apply to them unless you pass
-`--context desktop-linux`. For more information, see [Manage
+Docker commands no longer reach your local daemon while your context is
+`docker-cloud`. To run one against it, pass your local context with
+`--context`. For more information, see [Manage
 sandboxes](sandboxes.md#work-with-local-and-cloud-containers).
 
 ### Relationship to Docker Sandboxes
 
 Docker Offload runs on the same cloud infrastructure as [cloud
-sandboxes](/manuals/ai/sandboxes/cloud/_index.md) in Docker Agentic Platform,
-and both are covered by a Docker Agentic Platform subscription.
+sandboxes](/manuals/ai/sandboxes/cloud/_index.md) in Docker Agentic Platform.
 
-<!-- TODO: Document whether a sandbox created by `docker offload create`
-appears in `sbx --cloud ls`, and whether `docker offload ls` shows sandboxes
-created by `sbx --cloud create`. The two CLIs are documented as having separate
-state, so readers need to know whether Offload sandboxes are a separate pool
-or the same one viewed through a different command. -->
+A sandbox that Docker Offload creates belongs to your account and appears in
+the Docker Agentic Platform Console with a name that starts with `offload-`.
 
 ### Cloud resources
 
-<!-- TODO: Confirm the vCPU and memory of a Docker Offload sandbox, whether
-the size is configurable, and which CPU architectures are available. Docker
-Offload v1 used a fixed 4 vCPU / 8 GiB host. -->
+You can choose the size of a sandbox when Docker Offload creates it, using
+`--cpus` and `--memory`. For the available sizes, see [Choose the size of a new
+cloud sandbox](sandboxes.md#choose-the-size-of-a-new-cloud-sandbox).
 
-### Session lifecycle and hibernation
+The default is 4 vCPUs and 8 GiB of memory.
 
-A Docker Offload sandbox moves between a running state and a hibernated state.
+### Session lifecycle
+
+A Docker Offload sandbox moves between a running state and a paused state.
 
 - Running: The sandbox is connected and billable. Builds and containers execute
   on cloud hardware.
-- Hibernated: The sandbox is suspended and isn't billed. Its containers,
-  images, and volumes are preserved.
+- Paused: The sandbox is suspended and isn't billed. Its containers, images,
+  and volumes are preserved.
 
-Your sandbox hibernates when you run `docker offload stop`, or automatically
-after a period without activity. Hibernation can take several minutes to
-complete.
+Your sandbox pauses when you run `docker offload stop`, or automatically after
+a period without activity. By default, that period is 5 minutes. Docker Offload
+takes a short time to notice that a sandbox has gone quiet, so an automatic
+pause begins a little after the timeout rather than exactly on it. Pausing
+itself takes several minutes to complete.
 
-Resuming a hibernated sandbox restores its exact previous state. Containers
-that were running resume, and data written to volumes and container
-filesystems is still there. Build logs from an earlier session remain available
-in the sandbox.
+You don't resume a sandbox explicitly. Running a command that needs the sandbox
+or one of its containers resumes it. Resuming restores the sandbox's exact
+previous state: containers that were running resume, data written to volumes
+and container filesystems is still there, and build logs from an earlier
+session remain available. For which commands resume a sandbox and what's
+unavailable while it's paused, see [Resume a
+sandbox](sandboxes.md#resume-a-sandbox).
 
-<!-- TODO: Document the idle period that triggers automatic hibernation. -->
+Two separate timers govern the sandbox, because idle detection runs on the
+machine that's connected to it:
 
-<!-- TODO: Document how long a hibernated sandbox is retained before it's
-deleted. This determines how long earlier build logs and container state stay
-available, and it's the most common question from readers planning to walk away
-from a workload. -->
+- The idle timeout pauses the sandbox when your machine is awake but you're not
+  running anything. You can change it with `--idle-timeout`, or turn it off
+  with `--keep-alive`.
+- The time to live applies when no machine is connected, such as when your
+  machine sleeps or goes offline. Docker Offload keeps renewing it while a
+  machine is connected.
 
-<!-- TODO: Document the command that resumes a hibernated sandbox. The v2
-command set replaces `docker offload start`, so confirm whether resuming uses
-`docker offload create`, a dedicated resume command, or happens implicitly on
-the next Docker command. -->
+For how to set both, see [Control when your sandbox
+pauses](sandboxes.md#control-when-your-sandbox-pauses).
 
-<!-- TODO: Document what happens when `docker offload create` runs for the same
-account on two machines. -->
+### Working from more than one machine
+
+You can connect to the same sandbox from more than one machine. A second
+`docker offload create` connects to your existing sandbox rather than creating
+another one, so both machines report the same sandbox ID.
+
+Each connection keeps its own session timer and its own idle detection, so the
+two machines can report different times until idle. For more information, see
+[Connect from more than one
+machine](sandboxes.md#connect-from-more-than-one-machine).
 
 ### Comparison with Docker Offload v1
 
 | | Docker Offload | [Docker Offload v1](v1/_index.md) |
 | --- | --- | --- |
-| Subscription | Docker Agentic Platform, purchased by individual developers | Docker Offload, purchased by an organization |
+| Subscription | Docker Agentic Platform, purchased by individual developers | Docker Offload, purchased by an organization and a Teams or Business subscription. |
 | Start with | `docker offload create` | `docker offload start`, or the Dashboard toggle |
 | Run one command remotely | `docker --cloud build`, `docker --cloud run` | Not available |
-| Docker context | `cloud` | `docker-cloud` |
-| On stop | Sandbox hibernates and keeps its state | Environment is terminated and its contents are deleted |
+| On stop | Sandbox pauses and keeps its state | Environment is terminated and its contents are deleted |
+| Multiple machines | Connect to the same sandbox from more than one machine | One session per user at a time |
 | Billing | Metered for the time the sandbox runs | Covered by the organization's subscription, subject to fair use |
 
-> [!IMPORTANT]
->
-> The Docker context is named `cloud` rather than `docker-cloud`. If you have
-> scripts or tooling that reference the `docker-cloud` context, update them
-> before moving from Docker Offload v1.
+Both versions use the `docker-cloud` Docker context, so scripts and tooling
+that reference it by name keep working.
 
 ## What's next
 

@@ -1,46 +1,159 @@
 ---
 title: Manage Docker Offload sandboxes
 linktitle: Manage sandboxes
-weight: 20
+weight: 30
 description: Create, list, stop, resume, and delete the cloud sandbox that Docker Offload uses to run your containers.
-keywords: offload, cloud sandbox, context, hibernate, resume
+keywords: offload, cloud sandbox, context, idle timeout, keep alive, resume
 ---
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-Docker Offload runs your builds and containers in a cloud sandbox. This page
-covers the sandbox lifecycle and how to work with local and cloud containers at
-the same time.
+A cloud sandbox is an isolated environment on Docker-managed hardware, running
+its own Docker daemon. Docker Offload runs your builds and containers there
+instead of on your machine, using the Docker commands you already know. For why
+you'd run workloads this way, see [About Docker Offload](about.md).
 
-You can run one Docker Offload sandbox at a time.
+Unlike a local container, a sandbox persists between sessions. Stopping it
+pauses it rather than discarding it, so its containers, images, and volumes are
+still there when you come back. This page covers that lifecycle, including when
+a sandbox pauses, how to control it, and what's available while it's paused. It
+also covers working with local and cloud containers at the same time.
 
-## Create a sandbox
+You use one Docker Offload sandbox per account at a time. You can connect to it
+from more than one machine.
 
-```console
-$ docker offload create
-```
-
-This creates a sandbox, connects Docker Desktop to it, and switches your Docker
-context to `cloud`.
-
-If a sandbox already exists for your account, Docker Offload shows a warning
-instead of creating a second one.
-
-## List your sandboxes
+### Choose the size of a new cloud sandbox
 
 ```console
-$ docker offload ls
+$ docker offload create --cpus 8 --memory 16g --ttl 4h
 ```
 
-This lists only the sandboxes that Docker Offload created. You can also view
-your sandbox and its hourly price in the [Docker Agentic Platform
-Console](https://agentic-platform.docker.com/).
+| Flag | Description |
+| --- | --- |
+| `--cpus <number>` | The number of CPUs: 1, 2, 4, 8, or 16 |
+| `--memory <size>` | Memory, as a size such as `16g` |
+| `--ttl <duration>` | How long the sandbox keeps running after your machine stops renewing it, as a duration such as `4h` |
 
-To check the state of your connection:
+These flags apply only when Docker Offload creates a sandbox. If a sandbox is
+already running, they're ignored, and `docker offload create` tells you so.
+
+To change the size of a sandbox you already have, create it again with
+`--recreate`.
+
+> [!WARNING]
+>
+> `--recreate` deletes the existing sandbox and everything on it, including
+> containers, images, and volumes.
+
+## Find your sandbox
+
+To see the sandbox this machine is connected to, including its ID, use
+`docker offload status`.
+
+Your sandbox also appears in the [Docker Agentic Platform
+Console](https://agentic-platform.docker.com/) under your account, with a name
+that starts with `offload-`. For how it's reported there, see [Docker Offload
+usage](usage.md#find-your-sandbox-in-the-console).
+
+## Check the status of your sandbox
 
 ```console
 $ docker offload status
+
+  Account: <your-account>
+  State: Started (Active)
+  Session started: 4 minutes ago
+  Idle detection: on (10m)
+  Time until idle: 5 minutes from now
+  Sandbox: sbx_001m4e1egvjkmgfmfkvw8jmd21d
 ```
+
+| Field | Description |
+| --- | --- |
+| Account | The Docker account the sandbox belongs to |
+| State | Whether the sandbox is started and whether it's currently active |
+| Session started | How long this machine has been connected to the sandbox |
+| Idle detection | Whether idle detection is on, and the idle timeout in effect |
+| Time until idle | When this machine pauses the sandbox if no activity happens before then |
+| Kept awake by | What's keeping the sandbox awake, such as `container web-1` or a docker command from this machine |
+| Sandbox | The sandbox ID |
+
+`Time until idle` appears while the sandbox is counting down to a pause.
+Otherwise, `Kept awake by` appears in its place and names what's holding the
+sandbox open.
+
+`Session started`, `Time until idle`, and `Kept awake by` describe the
+connection from the machine you run the command on, not the sandbox as a whole.
+
+## Control when your sandbox pauses
+
+Docker Offload pauses an idle sandbox so that you aren't billed for time you
+aren't using. A paused sandbox keeps its containers, images, and volumes.
+
+Set the idle timeout when you create or connect to a sandbox:
+
+```console
+$ docker offload create --idle-timeout 30m
+```
+
+| Flag | Behavior |
+| --- | --- |
+| `--idle-timeout <duration>` | Pauses the sandbox after it has been quiet for `<duration>`. Defaults to 5m when you don't pass the flag. The minimum is 1m and there's no maximum. A value of 0 behaves like `--keep-alive`. Values between 0 and 1m are rejected |
+| `--keep-alive` | Turns off idle detection, so the sandbox runs until you stop it. Can't be combined with `--idle-timeout` |
+
+Either flag applies to a running sandbox straight away, without restarting it.
+`docker offload create` returns once the new timeout is in effect.
+
+Each machine remembers the idle timeout you last used for a sandbox. If you
+leave the flag off, Docker Offload reuses that value rather than resetting to
+the default. A new sandbox starts at 5m.
+
+> [!WARNING]
+>
+> With `--keep-alive`, the sandbox keeps running, and billing continues, until
+> you run `docker offload stop`. It still pauses if your machine sleeps past
+> the sandbox's time to live, and after 24 hours. For more information, see
+> [Docker Offload usage](usage.md).
+
+Idle detection runs on the machine that's connected to the sandbox, so it only
+applies while that machine is awake and online. If your machine sleeps or goes
+offline, the sandbox's time to live takes over instead.
+
+If `idle_timeout` is set in a config override file, it takes priority over both
+flags, and `docker offload create` tells you when that happens.
+
+### What counts as activity
+
+A sandbox is idle when both of these are true:
+
+- Nothing is working inside the sandbox. Docker Offload samples the sandbox
+  regularly and treats container or Docker daemon activity as work.
+- No command, build, or pull from your machine is in progress. An attached
+  session or a forwarded port stops counting after a minute with no data
+  passing through it.
+
+Some workloads read as idle even though you're not finished with them. A job
+that only waits on a remote call is the most common. Raise `--idle-timeout` or
+use `--keep-alive` for those.
+
+The reverse also happens. A container running on the host network keeps the
+sandbox awake, and so does a large number of running containers, because
+listing them is itself work. A sandbox in that state doesn't pause on its own,
+so stop it when you're finished.
+
+## Set how long a sandbox lives
+
+The `--ttl` flag sets the sandbox's time to live. It's independent of idle
+detection:
+
+```console
+$ docker offload create --ttl 8h
+```
+
+While a machine is connected, Docker Offload keeps renewing the time to live,
+so it counts down only once no machine is connected. In practice, the idle
+timeout handles the case where you're at your machine but not running anything,
+and the time to live handles the case where your machine has gone away.
 
 ## Stop a sandbox
 
@@ -49,45 +162,93 @@ $ docker offload stop
 ```
 
 Your Docker context switches back to `desktop-linux` immediately, and the
-sandbox begins hibernating in the background. Hibernation can take several
-minutes to finish.
+sandbox pauses in the background. Pausing can take several minutes to finish.
 
-A hibernated sandbox keeps its containers, images, and volumes. Billing stops
-when hibernation is initiated. For more information, see [Docker Offload
+A paused sandbox keeps its containers, images, and volumes. Billing stops when
+the sandbox starts pausing. For more information, see [Docker Offload
 usage](usage.md).
+
+Stopping pauses the sandbox for every machine on the account, not just the one
+you run the command on.
+
+## While your sandbox is paused
+
+A paused sandbox keeps its containers, images, and volumes, but it isn't
+serving anything until it resumes. While it's paused:
+
+- `docker ps` and `docker images` list nothing. Your containers and images are
+  still there and appear again after the sandbox resumes.
+- Forwarded ports and file sync don't work.
+- Attached sessions and exec sessions have ended. Reattach with `docker attach`
+  or start a new `docker exec` after the sandbox resumes.
+
+A sandbox stays paused when your machine wakes, reconnects, signs in, or
+restarts Docker Desktop. It resumes when you run a command that needs it.
 
 ## Resume a sandbox
 
-Resuming a hibernated sandbox restores its previous state. Containers that were
-running resume, and data written to volumes and container filesystems is
-preserved.
+You don't resume a sandbox explicitly. Running a command that needs the sandbox
+or one of its containers resumes it, including `docker run`, `docker start`,
+`docker exec`, `docker attach`, `docker logs`, and `docker inspect`. `docker
+offload create` resumes it too.
 
-If hibernation is still in progress when you resume, Docker Offload reports
-that and connects once the sandbox is ready. If the sandbox has finished
-hibernating, resuming is close to immediate.
+Commands that don't need the sandbox leave it paused, including `docker ps`,
+`docker images`, and `docker offload status`.
 
-<!-- TODO: Document the command that resumes a hibernated sandbox, then replace
-this placeholder with the command and its output. The v2 command set replaces
-`docker offload start`, so confirm whether resuming uses `docker offload
-create`, a dedicated resume command, or happens implicitly on the next Docker
-command. -->
+Resuming restores the sandbox's previous state. Containers that were running
+resume, and data written to volumes and container filesystems is preserved.
 
-<!-- TODO: Document how long a hibernated sandbox is retained before it's
-deleted, and what happens to its contents. -->
+If the sandbox is still pausing when you run a command that needs it, Docker
+Offload waits for the pause to finish and then resumes the sandbox. If the
+pause takes longer than the wait, Docker Offload tells you that the sandbox is
+still pausing and asks you to try again shortly.
 
 ## Delete a sandbox
 
-<!-- TODO: Confirm whether `docker offload delete` exists. If it does, document
-it here, including whether it needs the sandbox to be hibernated first and what
-it does to volumes. If it doesn't, document how a reader removes a sandbox
-they no longer want to keep. -->
+```console
+$ docker offload rm
+```
+
+Docker Offload asks for confirmation first. Pass `--force` to skip the prompt.
+
+Deleting a sandbox removes everything on it, including containers, images, and
+volumes, whether it's running or paused. Every machine on the account uses the
+same sandbox, so `docker offload rm` deletes it for all of them.
+
+The next `docker offload create` makes a new sandbox, which starts with the
+default idle timeout of 5m.
+
+## Connect from more than one machine
+
+You can connect to the same sandbox from more than one machine. Running `docker
+offload create` on a second machine connects to your existing sandbox rather
+than creating another one, so both machines report the same account and the
+same sandbox ID.
+
+Each connection is tracked separately, which means:
+
+- `Session started` counts from when that machine connected, so it restarts on
+  a newly connected machine while an earlier machine keeps its own count.
+- Idle detection is managed independently by each machine, and the machines
+  don't share that state. `Time until idle` can differ between them, and each
+  machine can use a different idle timeout.
+
+Because each machine applies its own idle timeout, another machine can pause
+the sandbox on its timeout while you're still using it. If you work from two
+machines, set the idle timeout you want on both.
+
+> [!IMPORTANT]
+>
+> Stopping and deleting aren't per-machine. Every machine on the account uses
+> the same sandbox, so `docker offload stop` pauses it for all of them, and
+> `docker offload rm` deletes it for all of them.
 
 ## Work with local and cloud containers
 
 Creating a sandbox doesn't stop your local containers. It changes which Docker
 daemon your commands reach.
 
-While your context is `cloud`:
+While your context is `docker-cloud`:
 
 - `docker ps -a` lists containers in the sandbox. Your local containers don't
   appear.
@@ -102,29 +263,51 @@ $ docker --context desktop-linux ps -a
 $ docker --context desktop-linux compose up
 ```
 
-To send a single command to the cloud while your context is local, use the
+To send a single command to the cloud while your context stays local, use the
 `--cloud` flag:
 
 ```console
 $ docker --cloud build .
 ```
 
-<!-- TODO: Document how ports published by containers in the sandbox are
-reached, and whether local published ports stay reachable while the context is
-`cloud`. The Offload v2 user journey describes sandbox ports as available on
-localhost, but cloud sandboxes are documented as exposing a port through a
-public HTTPS URL with no host port binding. See
-/manuals/ai/sandboxes/cloud/local-vs-cloud.md. -->
+`--cloud` applies to that one command. Unlike `docker offload create`, it
+doesn't change the context your other commands use, so the rest of your
+terminal keeps working locally. If you don't have a sandbox yet, `--cloud`
+creates one and waits for it to be ready, the same as `create` does.
+
+If the sandbox can't be provisioned, the command fails. `--cloud` never falls
+back to running locally, so a build or run you meant for the cloud doesn't
+silently use your own machine.
+
+### Ports and files
+
+Docker Offload forwards ports from containers in the sandbox to your machine,
+and syncs bind-mounted files, so published ports behave as they do locally.
+Forwarded ports and file sync stop working while the sandbox is paused, and
+start again when it resumes.
+
+This differs from using cloud sandboxes directly through the `sbx` CLI, where
+there's no path back to your machine. See [Compare local and cloud
+sandboxes](/manuals/ai/sandboxes/cloud/local-vs-cloud.md).
+
+<!-- TODO: Confirm how a port published in the sandbox is addressed from the
+host: whether it's localhost:<port> as with a local container, and whether
+anything differs for ports already in use locally. -->
+
+<!-- TODO: Confirm which bind mounts sync, and in which direction. -->
+
+Ports published by your local containers aren't reachable through the `docker-cloud`
+context. Switch context or use `--context desktop-linux` to reach them.
 
 ## Use Docker Compose in a sandbox
 
 Compose commands behave the same way in a sandbox as they do locally, and
-Compose state survives hibernation:
+Compose state survives a pause:
 
 - `docker compose stop` keeps the containers and their data. `docker compose
   up` resumes them.
 - `docker compose down` removes the containers. `docker compose up` then
   creates containers without the previous data.
 
-Because the sandbox persists through hibernation, a stack you bring up in one
-session is still there when you resume, including data written to its volumes.
+Because the sandbox persists while paused, a stack you bring up in one session
+is still there when you resume, including data written to its volumes.

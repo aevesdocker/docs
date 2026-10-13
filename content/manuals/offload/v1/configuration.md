@@ -8,17 +8,18 @@ keywords: cloud, configuration, settings, offload
 
 {{< summary-bar feature_name="Docker Offload v1" >}}
 
-You can configure Docker Offload settings at different levels depending on your
+You can configure Docker Offload v1 settings at different levels depending on your
 role. Organization owners can manage settings for all users in their
 organization, while individual developers can configure their own Docker Desktop
 settings when allowed by their organization.
 
 ## Manage settings for your organization
 
-For organization owners, you can manage Docker Offload settings for all users in
+For organization owners, you can manage Docker Offload v1 settings for all users in
 your organization. For more details, see [Manage Docker
-products](/manuals/accounts/organization/manage/manage-products.md). To view usage for Docker
-Offload, see [Docker Offload v1 usage](/manuals/offload/v1/usage.md).
+products](/manuals/accounts/organization/manage/manage-products.md). To view
+usage for Docker Offload v1, see [Docker Offload v1
+usage](/manuals/offload/v1/usage.md).
 
 ## Configure settings in Docker Desktop
 
@@ -32,16 +33,16 @@ allowed by your organization. To manage this setting:
 
 ### What the setting controls
 
-Starting with Docker Desktop 4.95, **Enable Docker Offload** selects which
-version of Docker Offload your Docker commands use:
+Starting with Docker Desktop 4.97, **Enable Docker Offload** selects which
+version of Docker Offload v1 your Docker commands use:
 
 | Enable Docker Offload | What you can use |
 | --- | --- |
 | On | Docker Offload v1: `docker offload start` and the toggle in the Docker Desktop Dashboard header |
 | Off | [Docker Offload](/manuals/offload/_index.md): `docker offload create` and `docker --cloud` |
 
-The setting appears only if your account has been activated for Docker Offload
-v1. It stays visible after a v1 subscription ends so that you can turn it off.
+The setting appears only if your account has been activated for Docker Offload v1
+v1. 
 
 ### Move to the current version of Docker Offload
 

@@ -13,7 +13,7 @@ tags: [Troubleshooting]
 
 Docker Offload requires:
 
-- Docker Desktop 4.95 or later
+- Docker Desktop 4.97 or later
 - Authentication
 - An active internet connection
 - No restrictive proxy or firewall blocking traffic to Docker Cloud
@@ -31,15 +31,7 @@ error to a fix.
 | You see | Cause | Fix |
 | --- | --- | --- |
 | A message telling you to turn off **Enable Docker Offload** when you run `docker offload create` or `docker --cloud` | The setting is on, so your commands use Docker Offload v1 | Turn off **Enable Docker Offload** in **Settings** > **Docker Offload**, then confirm your account has a Docker Agentic Platform subscription |
-| A message telling you to enable Docker Offload in settings when you run `docker offload start` | The setting is off, so your commands use the current version of Docker Offload | Turn on **Enable Docker Offload** if you have a Docker Offload v1 subscription, or use `docker offload create` instead |
 | No Docker Agentic Platform subscription, with a link to purchase | Your account doesn't have a subscription that covers Docker Offload | [Activate a subscription](/manuals/agentic-platform/signup.md#activate-cloud-access) |
-| No Offload subscription when you run `docker offload start` | Your organization's Docker Offload v1 subscription has ended, or you never had one | Turn off **Enable Docker Offload** and use the current version of Docker Offload, or <a href="https://www.docker.com/pricing/contact-sales/" id="dkr_docs_cs_offload_troubleshoot" class="link" rel="noopener">contact sales</a> about Docker Offload v1 |
-
-If **Enable Docker Offload** is on but your Docker Offload v1 subscription has
-ended, both versions report an error until you turn the setting off. Turning it
-off doesn't grant access on its own, so you also need a Docker Agentic Platform
-subscription. For more information, see [Configure Docker Offload
-v1](v1/configuration.md#what-the-setting-controls).
 
 ## Builds or containers aren't running in the cloud
 
@@ -49,7 +41,7 @@ v1](v1/configuration.md#what-the-setting-controls).
    $ docker offload status
    ```
 
-2. Check which Docker context is selected. Docker Offload uses the `cloud`
+1. Check which Docker context is selected. Docker Offload uses the `docker-cloud`
    context:
 
    ```console
@@ -60,22 +52,13 @@ v1](v1/configuration.md#what-the-setting-controls).
    `docker offload create` to connect, or pass `--cloud` on individual
    commands.
 
-3. Get more information about your connection and account access:
-
-   ```console
-   $ docker offload diagnose
-   ```
-
-4. Verify authentication with `docker login`. If needed, sign out and sign in
+1. Verify authentication with `docker login`. If needed, sign out and sign in
    again:
 
    ```console
    $ docker logout
    $ docker login
    ```
-
-5. Verify your usage. For more information, see [Docker Offload
-   usage](usage.md).
 
 ## Your containers are missing
 
@@ -92,9 +75,80 @@ $ docker --context desktop-linux ps -a
 For more information, see [Work with local and cloud
 containers](sandboxes.md#work-with-local-and-cloud-containers).
 
+## Your containers disappeared
+
+If `docker ps` and `docker images` list nothing, check whether your sandbox is
+paused:
+
+```console
+$ docker offload status
+```
+
+A paused sandbox keeps its containers, images, and volumes, but doesn't list
+them. Neither `docker ps` nor `docker images` resumes a sandbox. Run a command
+that needs the sandbox, such as `docker start` or `docker logs`, and your
+containers appear again. For more information, see [While your sandbox is
+paused](sandboxes.md#while-your-sandbox-is-paused).
+
+If the sandbox isn't paused, check which context is selected. See [Your
+containers are missing](#your-containers-are-missing).
+
+## Your sandbox paused while you were still working
+
+A sandbox pauses after 5 minutes without activity by default. A job that only
+waits on a remote call reads as idle, and so do long gaps between commands.
+
+An attached session or a forwarded port only counts as activity while data is
+passing through it, so an idle terminal attached to a container doesn't keep
+the sandbox awake.
+
+Raise the idle timeout, or turn idle detection off for sessions you don't want
+interrupted:
+
+```console
+$ docker offload create --idle-timeout 30m
+$ docker offload create --keep-alive
+```
+
+Each machine remembers the idle timeout you last used, so you don't need to
+pass the flag every time. With `--keep-alive`, the sandbox runs, and bills,
+until you stop it. For more information, see [Control when your sandbox
+pauses](sandboxes.md#control-when-your-sandbox-pauses).
+
+If `docker offload create` reports that your settings weren't applied, an
+`idle_timeout` in a config override file takes priority over both flags.
+
+## Your attached or exec session ended
+
+A pause ends attached sessions and exec sessions. After the sandbox resumes,
+reattach with `docker attach`, or start a new `docker exec`.
+
+## Your sandbox stopped while your machine was asleep
+
+Idle detection runs on the machine connected to the sandbox, so it doesn't
+apply when that machine sleeps or goes offline. The sandbox's time to live
+applies instead. Docker Offload renews the time to live while a machine is
+connected, so it only counts down once no machine is.
+
+To give a sandbox longer to survive a disconnect, set a longer time to live
+when you create it:
+
+```console
+$ docker offload create --ttl 8h
+```
+
+## Two machines report different times until idle
+
+This is expected. Each machine connected to a sandbox tracks its own session
+and its own idle detection, and they don't share that state. Both machines
+report the same account and sandbox ID. For more information, see [Connect from
+more than one machine](sandboxes.md#connect-from-more-than-one-machine).
+
 ## Resuming a sandbox is slow
 
-Hibernation can take several minutes to complete. If you resume a sandbox while
-it's still hibernating, Docker Offload reports that and connects once the
-sandbox is ready. Resuming a sandbox that has finished hibernating is close to
-immediate.
+Pausing takes several minutes to complete. If you run a command that needs the
+sandbox while it's still pausing, Docker Offload waits for the pause to finish
+and then resumes the sandbox. If the pause takes longer than that wait, Docker
+Offload tells you the sandbox is still pausing. Try the command again shortly.
+
+Resuming a sandbox that has finished pausing takes under a minute.
