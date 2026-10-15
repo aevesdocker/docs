@@ -8,8 +8,6 @@ keywords: cloud, usage, offload, billing
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-{{% include "offload-version-note.md" %}}
-
 Docker Offload is billed for the time your cloud sandbox runs, as part of your
 Docker Agentic Platform subscription. For subscription and payment information,
 see [Signup and billing](/manuals/agentic-platform/signup.md).
@@ -33,7 +31,7 @@ that period with `--idle-timeout`.
 > billing continues, until you run `docker offload stop`. It still pauses if
 > your machine sleeps past the sandbox's time to live, and after 24 hours. For
 > more information, see [Control when your sandbox
-> pauses](sandboxes.md#control-when-your-sandbox-pauses).
+> pauses](sandboxes.md#control-when-your-cloud-sandbox-pauses).
 
 Some workloads keep a sandbox awake even when you've stopped using it, which
 means it keeps billing. A container running on the host network does this, and
@@ -46,12 +44,6 @@ finished.
 To see your running sandbox and its hourly price, open the [Docker Agentic
 Platform Console](https://agentic-platform.docker.com/).
 
-To see the sandbox this machine is connected to from the CLI:
-
-```console
-$ docker offload status
-```
-
 ### Find your sandbox in the Console
 
 A sandbox that Docker Offload creates appears in the Console under your account
@@ -61,9 +53,6 @@ sandboxes you started another way.
 Your usage shows the sandbox's details, such as its size, vCPUs, and memory. It
 doesn't report that Docker Offload created the sandbox, so the name prefix is
 what identifies it.
-
-While a sandbox is running, Docker Desktop shows a session duration estimate in
-the Dashboard footer next to the hourglass icon.
 
 ## Reduce your usage
 

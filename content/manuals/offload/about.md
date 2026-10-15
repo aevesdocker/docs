@@ -8,15 +8,6 @@ keywords: cloud, offload, vdi, cloud sandbox
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-{{% include "offload-version-note.md" %}}
-
-Docker Offload is a fully managed service for building and running containers
-in the cloud using the Docker tools you already know, including Docker Desktop,
-the Docker CLI, and Docker Compose. It extends your local development workflow
-into a cloud environment, so you can work on hardware that can't run your
-workload, in virtual desktop infrastructure (VDI) environments, or on systems
-that don't support nested virtualization.
-
 This page explains how Docker Offload works: what happens when you create a
 sandbox, how a sandbox moves between running and paused, and how the current
 version differs from Docker Offload v1. To get set up, follow the
@@ -49,7 +40,7 @@ page](https://www.docker.com/products/docker-offload/).
 Docker Offload replaces the need to build or run containers locally by
 connecting Docker Desktop to a cloud sandbox running its own Docker daemon.
 
-When you run `docker offload create`:
+When you run `docker offload create` or `docker --cloud <command>`:
 
 1. Docker Offload provisions a cloud sandbox for your account.
 2. Docker Desktop opens a secure tunnel to the Docker daemon in that sandbox.
@@ -113,7 +104,7 @@ machine that's connected to it:
   machine is connected.
 
 For how to set both, see [Control when your sandbox
-pauses](sandboxes.md#control-when-your-sandbox-pauses).
+pauses](sandboxes.md#control-when-your-cloud-sandbox-pauses).
 
 ### Working from more than one machine
 
@@ -131,8 +122,7 @@ machine](sandboxes.md#connect-from-more-than-one-machine).
 | | Docker Offload | [Docker Offload v1](v1/_index.md) |
 | --- | --- | --- |
 | Subscription | Docker Agentic Platform, purchased by individual developers | Docker Offload, purchased by an organization and a Teams or Business subscription. |
-| Start with | `docker offload create` | `docker offload start`, or the Dashboard toggle |
-| Run one command remotely | `docker --cloud build`, `docker --cloud run` | Not available |
+| Start with | `docker --cloud <command>` or `docker offload create` | `docker offload start`, or the Dashboard toggle |
 | On stop | Sandbox pauses and keeps its state | Environment is terminated and its contents are deleted |
 | Multiple machines | Connect to the same sandbox from more than one machine | One session per user at a time |
 | Billing | Metered for the time the sandbox runs | Covered by the organization's subscription, subject to fair use |

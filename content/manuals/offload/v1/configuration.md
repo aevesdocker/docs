@@ -33,7 +33,7 @@ allowed by your organization. To manage this setting:
 
 ### What the setting controls
 
-Starting with Docker Desktop 4.97, **Enable Docker Offload** selects which
+Starting with Docker Desktop 4.96, **Enable Docker Offload** selects which
 version of Docker Offload v1 your Docker commands use:
 
 | Enable Docker Offload | What you can use |

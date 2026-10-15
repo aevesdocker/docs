@@ -9,11 +9,9 @@ tags: [Troubleshooting]
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-{{% include "offload-version-note.md" %}}
-
 Docker Offload requires:
 
-- Docker Desktop 4.97 or later
+- Docker Desktop 4.96 or later
 - Authentication
 - An active internet connection
 - No restrictive proxy or firewall blocking traffic to Docker Cloud
@@ -59,6 +57,24 @@ error to a fix.
    $ docker logout
    $ docker login
    ```
+
+## A Docker command reports an unknown --cloud flag
+
+```console
+$ docker run --cloud --rm hello-world
+unknown flag: --cloud
+```
+
+`--cloud` is a global flag on the `docker` command, so it must come before the
+subcommand:
+
+```console
+$ docker --cloud run --rm hello-world
+```
+
+A subcommand doesn't define `--cloud` itself, so it rejects the flag wherever it
+appears after the subcommand name, including between other options. This applies
+to every subcommand.
 
 ## Your containers are missing
 
@@ -113,7 +129,7 @@ $ docker offload create --keep-alive
 Each machine remembers the idle timeout you last used, so you don't need to
 pass the flag every time. With `--keep-alive`, the sandbox runs, and bills,
 until you stop it. For more information, see [Control when your sandbox
-pauses](sandboxes.md#control-when-your-sandbox-pauses).
+pauses](sandboxes.md#control-when-your-cloud-sandbox-pauses).
 
 If `docker offload create` reports that your settings weren't applied, an
 `idle_timeout` in a config override file takes priority over both flags.

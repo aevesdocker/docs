@@ -15,7 +15,7 @@ grid:
   description: Learn about Docker Offload and how it works.
   icon: information-circle
   link: /offload/about/
-- title: Manage sandboxes
+- title: Manage cloud sandboxes
   description: Start, stop, inspect, and resume the cloud sandbox that runs your containers.
   icon: command-line
   link: /offload/sandboxes/
@@ -49,13 +49,13 @@ infrastructure (VDI) environments, or on systems that don't support nested
 virtualization.
 
 Docker Offload is for individual developers, and it's included with a [Docker
-Agentic Platform](/manuals/subscription-billing/plans/docker-agentic-platform.md) subscription. You pay for the time your sandbox runs.
+Agentic Platform](/manuals/subscription-billing/plans/docker-agentic-platform.md) subscription. You pay for the time your cloud sandbox runs.
 
 > [!NOTE]
 >
 > If you start Docker Offload with `docker offload start`, or with the cloud toggle
 > in the Docker Desktop Dashboard header, your organization subscribes to
-> [Docker Offload v1](v1/_index.md). To use `docker offload create` instead,
+> [Docker Offload v1](v1/_index.md). To use the latest version of Docker Offload,
 > see [Move to the current version of Docker
 > Offload](v1/configuration.md#move-to-the-current-version-of-docker-offload).
 

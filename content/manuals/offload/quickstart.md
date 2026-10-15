@@ -8,24 +8,20 @@ keywords: cloud, quickstart, Docker Desktop, offload
 
 {{< summary-bar feature_name="Docker Offload" >}}
 
-{{% include "offload-version-note.md" %}}
-
-[Docker Offload](about.md) lets you build and run containers in a cloud sandbox
-while using your local Docker tools and workflow. Your containers run on cloud
-hardware, but you work with them the same way you work with local containers.
-
 This quickstart covers the steps developers need to get started with Docker
 Offload.
 
+It describes Docker Offload usage with `docker offload create` and
+`docker --cloud`, which requires a Docker Agentic Platform subscription. If you
+start Offload with `docker offload start` or the toggle in the Docker Desktop
+Dashboard header, see [Docker Offload v1](/manuals/offload/v1/_index.md).
+
 ## Prerequisites
 
-- [Docker Desktop](/desktop/) 4.97 or later. Docker recommends using the latest
+- [Docker Desktop](/desktop/) 4.96 or later. Docker recommends using the latest
   version to access the newest features and improvements in Docker Offload.
 - A Docker Agentic Platform subscription. To subscribe, see [Signup and
   billing](/manuals/agentic-platform/signup.md).
-- **Enable Docker Offload** turned off in **Settings** > **Docker Offload**, if
-  the setting appears. The setting appears only if your account has been
-  activated for [Docker Offload v1](v1/_index.md).
 
 ## Step 1: Create a cloud sandbox
 
@@ -38,11 +34,6 @@ $ docker offload create
 Docker Offload creates a cloud sandbox and switches your Docker context to
 `docker-cloud`. From this point, Docker commands run in the cloud sandbox instead of
 on your local machine.
-
-> [!TIP]
->
-> To learn more about the Docker Offload CLI commands, see the [Docker Offload
-> CLI reference](/reference/cli/docker/offload/).
 
 To confirm which context is selected:
 
@@ -73,6 +64,12 @@ $ docker --cloud run --rm hello-world
 
 If you don't already have a sandbox, `docker --cloud` creates one.
 
+> [!IMPORTANT]
+>
+> `--cloud` is a global flag, so it goes before the subcommand. Passing it
+> after, as in `docker run --cloud hello-world`, fails with
+> `unknown flag: --cloud`.
+
 ## Step 3: Check your sandbox
 
 You can view your sandbox, including its hourly price, in the [Docker
@@ -98,7 +95,7 @@ $ docker offload status
 ```
 
 For what each field means, see [Check the status of your
-sandbox](sandboxes.md#check-the-status-of-your-sandbox).
+sandbox](sandboxes.md#check-the-status-of-your-cloud-sandbox).
 
 ## Step 4: Reach your local containers
 
@@ -140,7 +137,7 @@ sandboxes](sandboxes.md).
 
 If you forget to stop it, your sandbox pauses on its own after 5 minutes
 without activity. To change that period or turn it off, see [Control when your
-sandbox pauses](sandboxes.md#control-when-your-sandbox-pauses).
+sandbox pauses](sandboxes.md#control-when-your-cloud-sandbox-pauses).
 
 To pick up where you left off, run a command that needs the sandbox, such as
 `docker start` or `docker run`. That resumes it. 
@@ -158,6 +155,7 @@ The sandox is removed from the Docker Agentic Platform console as well.
 
 ## What's next
 
+- [Explore the Docker Offload CLI reference](/reference/cli/docker/offload/).
 - [Learn how Docker Offload works](about.md)
 - [Manage your sandbox](sandboxes.md), including resuming and deleting it
 - [Optimize your Docker Offload usage](optimize.md)

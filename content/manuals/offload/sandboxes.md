@@ -1,6 +1,6 @@
 ---
 title: Manage Docker Offload sandboxes
-linktitle: Manage sandboxes
+linktitle: Manage Offload sandboxes
 weight: 30
 description: Create, list, stop, resume, and delete the cloud sandbox that Docker Offload uses to run your containers.
 keywords: offload, cloud sandbox, context, idle timeout, keep alive, resume
@@ -13,13 +13,13 @@ its own Docker daemon. Docker Offload runs your builds and containers there
 instead of on your machine, using the Docker commands you already know. For why
 you'd run workloads this way, see [About Docker Offload](about.md).
 
-Unlike a local container, a sandbox persists between sessions. Stopping it
+A cloud sandbox persists between sessions. Stopping it
 pauses it rather than discarding it, so its containers, images, and volumes are
 still there when you come back. This page covers that lifecycle, including when
 a sandbox pauses, how to control it, and what's available while it's paused. It
 also covers working with local and cloud containers at the same time.
 
-You use one Docker Offload sandbox per account at a time. You can connect to it
+You use one Docker Offload cloud sandbox per account at a time. You can connect to it
 from more than one machine.
 
 ### Choose the size of a new cloud sandbox
@@ -32,30 +32,20 @@ $ docker offload create --cpus 8 --memory 16g --ttl 4h
 | --- | --- |
 | `--cpus <number>` | The number of CPUs: 1, 2, 4, 8, or 16 |
 | `--memory <size>` | Memory, as a size such as `16g` |
-| `--ttl <duration>` | How long the sandbox keeps running after your machine stops renewing it, as a duration such as `4h` |
+| `--ttl <duration>` | How long the cloud sandbox keeps running after your machine stops renewing it, as a duration such as `4h` |
 
-These flags apply only when Docker Offload creates a sandbox. If a sandbox is
+These flags apply only when Docker Offload creates a sandbox. If a cloud sandbox is
 already running, they're ignored, and `docker offload create` tells you so.
 
-To change the size of a sandbox you already have, create it again with
+To change the size of a cloud sandbox you already have, create it again with
 `--recreate`.
 
 > [!WARNING]
 >
-> `--recreate` deletes the existing sandbox and everything on it, including
+> `--recreate` deletes the existing cloud sandbox and everything on it, including
 > containers, images, and volumes.
 
-## Find your sandbox
-
-To see the sandbox this machine is connected to, including its ID, use
-`docker offload status`.
-
-Your sandbox also appears in the [Docker Agentic Platform
-Console](https://agentic-platform.docker.com/) under your account, with a name
-that starts with `offload-`. For how it's reported there, see [Docker Offload
-usage](usage.md#find-your-sandbox-in-the-console).
-
-## Check the status of your sandbox
+## Check the status of your cloud sandbox
 
 ```console
 $ docker offload status
@@ -85,7 +75,12 @@ sandbox open.
 `Session started`, `Time until idle`, and `Kept awake by` describe the
 connection from the machine you run the command on, not the sandbox as a whole.
 
-## Control when your sandbox pauses
+Your sandbox also appears in the [Docker Agentic Platform
+Console](https://agentic-platform.docker.com/) under your account, with a name
+that starts with `offload-`. For how it's reported there, see [Docker Offload
+usage](usage.md#find-your-sandbox-in-the-console).
+
+## Control when your cloud sandbox pauses
 
 Docker Offload pauses an idle sandbox so that you aren't billed for time you
 aren't using. A paused sandbox keeps its containers, images, and volumes.
@@ -270,6 +265,16 @@ To send a single command to the cloud while your context stays local, use the
 $ docker --cloud build .
 ```
 
+`--cloud` is a global flag on the `docker` command, so it goes before the
+subcommand. Passing it after the subcommand fails:
+
+```console
+$ docker run --cloud --rm hello-world
+unknown flag: --cloud
+```
+
+This applies to every subcommand, not just `run`.
+
 `--cloud` applies to that one command. Unlike `docker offload create`, it
 doesn't change the context your other commands use, so the rest of your
 terminal keeps working locally. If you don't have a sandbox yet, `--cloud`
@@ -299,7 +304,7 @@ anything differs for ports already in use locally. -->
 Ports published by your local containers aren't reachable through the `docker-cloud`
 context. Switch context or use `--context desktop-linux` to reach them.
 
-## Use Docker Compose in a sandbox
+## Use Docker Compose in a cloud sandbox
 
 Compose commands behave the same way in a sandbox as they do locally, and
 Compose state survives a pause:
