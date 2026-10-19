@@ -4,8 +4,8 @@ long: |-
   Create a Docker Offload cloud sandbox.
 
   This command is available when **Enable Docker Offload** is turned off in
-  Docker Desktop settings, or doesn't appear. If the setting is on, your Docker
-  commands use Docker Offload v1, which uses `docker offload start` instead.
+  Docker Desktop settings, or doesn't appear. If the setting is on, you'll be asked to 
+  switch it off before continuing.
 
   If a sandbox already exists for your account, `create` connects to it instead
   of creating a second one, and resumes it if it's paused.

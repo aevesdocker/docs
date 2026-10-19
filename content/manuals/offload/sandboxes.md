@@ -51,29 +51,43 @@ To change the size of a cloud sandbox you already have, create it again with
 $ docker offload status
 
   Account: <your-account>
-  State: Started (Active)
-  Session started: 4 minutes ago
-  Idle detection: on (10m)
-  Time until idle: 5 minutes from now
-  Sandbox: sbx_001m4e1egvjkmgfmfkvw8jmd21d
+
+  Sandbox
+    ID: sbx_001m49455jm42x4v6epbg8kd5fy
+    State: Running
+    Created: 6 days ago
+
+  This machine
+    State: Started (Active)
+    Session started: 21 hours ago
+    Idle detection: on (5m)
+    Kept awake by: checking activity
 ```
+
+`Account` is the Docker account the sandbox belongs to. The rest is grouped to
+separate the sandbox itself from your connection to it.
+
+Sandbox:
 
 | Field | Description |
 | --- | --- |
-| Account | The Docker account the sandbox belongs to |
-| State | Whether the sandbox is started and whether it's currently active |
-| Session started | How long this machine has been connected to the sandbox |
-| Idle detection | Whether idle detection is on, and the idle timeout in effect |
+| ID | The sandbox ID |
+| State | Whether the sandbox is running or paused |
+| Created | When the sandbox was created |
+
+This machine:
+
+| Field | Description |
+| --- | --- |
+| State | Whether this machine is connected to the sandbox, and whether it's active |
+| Session started | How long this machine has been connected |
+| Idle detection | Whether idle detection is on, and the idle timeout in effect. The default is 5m |
 | Time until idle | When this machine pauses the sandbox if no activity happens before then |
-| Kept awake by | What's keeping the sandbox awake, such as `container web-1` or a docker command from this machine |
-| Sandbox | The sandbox ID |
+| Kept awake by | What's keeping the sandbox awake, such as a running container or a docker command from this machine |
 
-`Time until idle` appears while the sandbox is counting down to a pause.
-Otherwise, `Kept awake by` appears in its place and names what's holding the
-sandbox open.
-
-`Session started`, `Time until idle`, and `Kept awake by` describe the
-connection from the machine you run the command on, not the sandbox as a whole.
+`Time until idle` and `Kept awake by` are alternatives. The countdown appears
+while the sandbox is heading for a pause, and `Kept awake by` appears in its
+place when something is holding it open.
 
 Your sandbox also appears in the [Docker Agentic Platform
 Console](https://agentic-platform.docker.com/) under your account, with a name
@@ -138,7 +152,7 @@ so stop it when you're finished.
 
 ## Set how long a sandbox lives
 
-The `--ttl` flag sets the sandbox's time to live. It's independent of idle
+The `--ttl` flag sets the sandbox's time to live. The maximum time is 24 hours. It's independent of idle
 detection:
 
 ```console

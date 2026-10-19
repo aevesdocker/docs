@@ -31,19 +31,6 @@ allowed by your organization. To manage this setting:
 3. In **Settings**, select **Docker Offload**.
 4. Toggle **Enable Docker Offload**. When enabled, you can start Offload sessions.
 
-### What the setting controls
-
-Starting with Docker Desktop 4.96, **Enable Docker Offload** selects which
-version of Docker Offload v1 your Docker commands use:
-
-| Enable Docker Offload | What you can use |
-| --- | --- |
-| On | Docker Offload v1: `docker offload start` and the toggle in the Docker Desktop Dashboard header |
-| Off | [Docker Offload](/manuals/offload/_index.md): `docker offload create` and `docker --cloud` |
-
-The setting appears only if your account has been activated for Docker Offload v1
-v1. 
-
 ### Move to the current version of Docker Offload
 
 To use `docker offload create` and `docker --cloud`, turn off **Enable Docker

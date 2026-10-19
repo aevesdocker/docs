@@ -29,7 +29,7 @@ grid:
 
 {{< summary-bar feature_name="Docker Offload v1" >}}
 
-Docker Offload v1 is the version of Docker Offload v1 that organizations subscribe
+Docker Offload v1 is the version of Docker Offload that organizations subscribe
 to and that you start with `docker offload start` or the toggle in the Docker
 Desktop Dashboard header. It runs builds and containers in an ephemeral cloud
 environment that's removed when your session ends.
@@ -38,7 +38,7 @@ These pages are for you if any of the following apply:
 
 - Your organization has a Docker Offload v1 subscription.
 - You see a **Docker Offload** toggle in the Docker Desktop Dashboard header.
-- **Enable Docker Offload** is turned on in **Settings** > **Docker Offload**.
+- **Enable Docker Offload** is visible and on in Docker Desktops settings.
 
 For the version that individual developers subscribe to and start with
 `docker offload create`, see [Docker Offload](/manuals/offload/_index.md).

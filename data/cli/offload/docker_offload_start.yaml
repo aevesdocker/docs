@@ -22,17 +22,6 @@ options:
     experimentalcli: false
     kubernetes: false
     swarm: false
-  - option: gpu
-    shorthand: g
-    value_type: bool
-    default_value: "false"
-    description: Request an engine with a gpu
-    deprecated: false
-    hidden: false
-    experimental: false
-    experimentalcli: false
-    kubernetes: false
-    swarm: false
   - option: timeout
     value_type: duration
     default_value: 10s

@@ -1,11 +1,5 @@
 command: docker offload diagnose
-short: Print diagnostic information for Docker Offload v1
-long: |-
-  Print diagnostic information for Docker Offload v1.
-
-  This command belongs to Docker Offload v1, and works when **Enable Docker
-  Offload** is turned on in Docker Desktop settings. If the setting is off, or
-  doesn't appear, use `docker offload status` instead.
+short: Print diagnostic information for Docker Offload
 usage: docker offload diagnose
 pname: docker offload
 plink: docker_offload.yaml

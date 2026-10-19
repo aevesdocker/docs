@@ -32,7 +32,7 @@ $ docker offload create
 ```
 
 Docker Offload creates a cloud sandbox and switches your Docker context to
-`docker-cloud`. From this point, Docker commands run in the cloud sandbox instead of
+`docker-cloud`. From this point, `docker` commands run in the cloud sandbox instead of
 on your local machine.
 
 To confirm which context is selected:
@@ -53,7 +53,7 @@ The container runs in the cloud sandbox, and its output is streamed to your
 terminal. If Docker Offload is working, you see `Hello from Docker!` in the
 output.
 
-You can also send a single command to the sandbox without creating one first.
+You can also send a single command to the sandbox without running `docker offload create` first.
 The `--cloud` flag runs that command in the cloud and leaves your context
 unchanged:
 
@@ -81,20 +81,28 @@ offload create` while a sandbox exists, Docker Offload connects you to that
 sandbox instead of creating a second one. This is how you work from more than
 one machine.
 
-To check the state of your connection at any time:
+To check the state of your sandbox and your connection to it:
 
 ```console
 $ docker offload status
 
   Account: <your-account>
-  State: Started (Active)
-  Session started: 4 minutes ago
-  Idle detection: on (10m)
-  Time until idle: 5 minutes from now
-  Sandbox: sbx_001m4e1egvjkmgfmfkvw8jmd21d
+
+  Sandbox
+    ID: sbx_001m49455jm42x4v6epbg8kd5fy
+    State: Running
+    Created: 4 minutes ago
+
+  This machine
+    State: Started (Active)
+    Session started: 4 minutes ago
+    Idle detection: on (5m)
+    Kept awake by: checking activity
 ```
 
-For what each field means, see [Check the status of your
+The output separates the sandbox, which every machine on your account shares,
+from this machine's connection to it. For what each field means, see [Check the
+status of your cloud
 sandbox](sandboxes.md#check-the-status-of-your-cloud-sandbox).
 
 ## Step 4: Reach your local containers
@@ -126,7 +134,7 @@ When you finish, stop Docker Offload:
 $ docker offload stop
 ```
 
-Your Docker context switches back to `desktop-linux` immediately, and the
+Your Docker context switches back to your previous context immediately, and the
 sandbox pauses in the background. Your local containers and their published
 ports are available again.
 
@@ -151,7 +159,7 @@ everything on it, run:
 $ docker offload rm
 ```
 
-The sandox is removed from the Docker Agentic Platform console as well.
+The sandbox is removed from the Docker Agentic Platform console as well.
 
 ## What's next
 
